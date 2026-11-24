@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\MenuItemController;
 use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\OrderItemController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::patch('/orders/{orderId}/items/{itemId}', [OrderItemController::class, 'update']);
+    Route::delete('/orders/{orderId}/items/{itemId}', [OrderItemController::class, 'destroy']);
 
     Route::get('/profile', function (Request $request) {
         return response()->json([
@@ -37,3 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 
 });
+
+
+

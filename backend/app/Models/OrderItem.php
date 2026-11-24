@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class OrderItem extends Model
 {
     //
-  
+
+    protected $appends = ['subtotal'];
+
     protected $fillable = [
         'order_id',
         'menu_item_id',
@@ -20,6 +22,11 @@ class OrderItem extends Model
         return [
             'price' => 'decimal:2',
         ];
+    }
+
+    public function getSubtotalAttribute(): string
+    {
+        return number_format((float) $this->price * (int) $this->quantity, 2, '.', '');
     }
 
     public function order()

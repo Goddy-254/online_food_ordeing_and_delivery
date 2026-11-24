@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 class AuthController extends Controller
 {
     //
-     public function register(Request $request)
+    public function register(Request $request)
     {
         // Validate incoming registration data
         $validated = $request->validate([
@@ -26,6 +26,8 @@ class AuthController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        // Fetch database defaults (such as `role = 'customer'`)
+        $user->refresh();
         // Generate authentication token
         $token = $user->createToken('auth_token')->plainTextToken;
 
@@ -37,32 +39,42 @@ class AuthController extends Controller
     }
 
 
-public function login(Request $request)
-{
-    // Validate login credentials
-    $validated = $request->validate([
-        'email' => 'required|email',
-        'password' => 'required|string',
-    ]);
+    public function login(Request $request)
+    {
+        // Validate login credentials
+        $validated = $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string',
+        ]);
 
-    // Find user by email
-    $user = User::where('email', $validated['email'])->first();
+        // Find user by email
+        $user = User::where('email', $validated['email'])->first();
 
-    // Verify password
-    if (!$user || !Hash::check($validated['password'], $user->password)) {
+        // Verify password
+        if (!$user || !Hash::check($validated['password'], $user->password)) {
+            return response()->json([
+                'message' => 'Invalid email or password',
+            ], 401);
+        }
+
+        // Generate token
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return response()->json([
-            'message' => 'Invalid email or password',
-        ], 401);
+            'message' => 'Login successful',
+            'user' => $user,
+            'token' => $token,
+        ], 200);
     }
 
-    // Generate token
-    $token = $user->createToken('auth_token')->plainTextToken;
 
-    return response()->json([
-        'message' => 'Login successful',
-        'user' => $user,
-        'token' => $token,
-    ], 200);
-}
+    public function logout(Request $request)
+    {
+        // Delete the token used for this request
+        $request->user()->currentAccessToken()->delete();
 
+        return response()->json([
+            'message' => 'Logout successful',
+        ], 200);
+    }
 }

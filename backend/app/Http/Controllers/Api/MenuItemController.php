@@ -3,47 +3,90 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\MenuItem;
 use Illuminate\Http\Request;
 
 class MenuItemController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Display all menu items.
      */
     public function index()
     {
-        //
+        $menuItems = MenuItem::with('category')->latest()->get();
+
+        return response()->json([
+            'message' => 'Menu items retrieved successfully',
+            'data' => $menuItems
+        ], 200);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Store a newly created menu item.
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'category_id' => 'required|exists:categories,id',
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric|min:0',
+            'image' => 'nullable|string|max:2048',
+        ]);
+
+        $menuItem = MenuItem::create($validated);
+
+        return response()->json([
+            'message' => 'Menu item created successfully',
+            'data' => $menuItem->load('category')
+        ], 201);
     }
 
     /**
-     * Display the specified resource.
+     * Display a specific menu item.
      */
     public function show(string $id)
     {
-        //
+        $menuItem = MenuItem::with('category')->findOrFail($id);
+
+        return response()->json([
+            'message' => 'Menu item retrieved successfully',
+            'data' => $menuItem
+        ], 200);
     }
 
     /**
-     * Update the specified resource in storage.
+     * Update an existing menu item.
      */
     public function update(Request $request, string $id)
     {
-        //
+        $menuItem = MenuItem::findOrFail($id);
+
+        $validated = $request->validate([
+            'category_id' => 'sometimes|required|exists:categories,id',
+            'name' => 'sometimes|required|string|max:255',
+            'price' => 'sometimes|required|numeric|min:0',
+            'image' => 'sometimes|nullable|string|max:2048',
+        ]);
+
+        $menuItem->update($validated);
+
+        return response()->json([
+            'message' => 'Menu item updated successfully',
+            'data' => $menuItem->load('category')
+        ], 200);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove a menu item.
      */
     public function destroy(string $id)
     {
-        //
+        $menuItem = MenuItem::findOrFail($id);
+
+        $menuItem->delete();
+
+        return response()->json([
+            'message' => 'Menu item deleted successfully'
+        ], 200);
     }
 }
