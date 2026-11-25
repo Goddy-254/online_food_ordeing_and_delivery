@@ -2,6 +2,7 @@
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useMenuStore } from '@/stores/menuStore'
+import Navbar from '@/components/Navbar.vue'
 import { RouterLink, RouterView } from 'vue-router'
 import HelloWorld from './components/HelloWorld.vue'
 
@@ -13,6 +14,7 @@ onMounted(() => menuStore.fetchCategories())
 
 <template>
   <header>
+      <Navbar />
       <!-- <nav>
         <RouterLink to="/">Home</RouterLink>
         <RouterLink to="/about">About</RouterLink>

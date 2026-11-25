@@ -6,6 +6,7 @@ import { useMenuStore } from "@/stores/menuStore"
 import CategoryList from "@/components/CategoryList.vue";
 import FoodCard from "@/components/FoodCard.vue";
 
+
 const menuStore = useMenuStore();
 
 // Selected category

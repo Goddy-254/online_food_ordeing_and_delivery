@@ -29,7 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::patch('/orders/{orderId}/items/{itemId}', 'App\\Http\\Controllers\\Api\\OrderItemController@update');
-    Route::delete('/orders/{orderId}/items/{itemId}', [OrderItemController::class, 'destroy']);
+    Route::delete('/orders/{orderId}/items/{itemId}', 'App\\Http\\Controllers\\Api\\OrderItemController@destroy');
 
     Route::get('/profile', function (Request $request) {
         return response()->json([
@@ -39,7 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Order routes
 
-Route::apiResource('orders', OrderController::class);
+Route::apiResource('orders', 'App\\Http\\Controllers\\Api\\OrderController');
 
 
 });
