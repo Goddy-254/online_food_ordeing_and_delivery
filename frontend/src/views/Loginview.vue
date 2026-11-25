@@ -1,11 +1,12 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter, RouterLink } from 'vue-router'
+import { useRoute, useRouter, RouterLink } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const authStore = useAuthStore()
 const router = useRouter()
+const route = useRoute()
 
 const email = ref('')
 const password = ref('')
@@ -20,7 +21,13 @@ const handleLogin = async () => {
       password: password.value,
     })
 
-    await router.push('/menu')
+    const redirect = route.query.redirect
+    const safeRedirect =
+      typeof redirect === 'string' && redirect.startsWith('/') && !redirect.startsWith('//')
+        ? redirect
+        : '/menu'
+
+    await router.push(safeRedirect)
 
   } catch (error) {
     errorMessage.value =

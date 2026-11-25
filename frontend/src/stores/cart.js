@@ -106,6 +106,7 @@ const clearCart = () => {
         removeFromCart,
         increaseQuantity,
         decreaseQuantity,
+        clearCart,
         cartTotal,
         cartCount
     }

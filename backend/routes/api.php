@@ -13,10 +13,10 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 //categories routes
-Route::apiResource('/categories', CategoryController::class);
+Route::get('/categories', [CategoryController::class, 'index']);
 
 // Menu item routes
-Route::apiResource('/menu-items', MenuItemController::class);
+Route::get('/menu-items', [MenuItemController::class, 'index']);
 
 
 
@@ -28,8 +28,8 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::patch('/orders/{orderId}/items/{itemId}', 'App\\Http\\Controllers\\Api\\OrderItemController@update');
-    Route::delete('/orders/{orderId}/items/{itemId}', 'App\\Http\\Controllers\\Api\\OrderItemController@destroy');
+    Route::patch('/orders/{orderId}/items/{itemId}', [OrderItemController::class, 'update']);
+    Route::delete('/orders/{orderId}/items/{itemId}', [OrderItemController::class, 'destroy']);
 
     Route::get('/profile', function (Request $request) {
         return response()->json([
@@ -39,8 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 // Order routes
 
-Route::apiResource('orders', 'App\\Http\\Controllers\\Api\\OrderController');
-
+Route::apiResource('orders', OrderController::class);
 
 });
 

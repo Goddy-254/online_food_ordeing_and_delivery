@@ -28,6 +28,7 @@ const router = createRouter({
       path: '/checkout',
       name: 'checkout',
       component: () => import('../views/CheckOutView.vue'),
+      meta: { requiresAuth: true },
     },
 
     {
@@ -43,6 +44,15 @@ const router = createRouter({
 
 
   ],
+})
+
+router.beforeEach((to) => {
+  if (to.meta.requiresAuth && !localStorage.getItem('token')) {
+    return {
+      name: 'login',
+      query: { redirect: to.fullPath },
+    }
+  }
 })
 
 export default router

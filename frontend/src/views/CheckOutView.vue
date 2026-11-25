@@ -1,12 +1,10 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cart'
 import api from '@/services/api'
 
 const cartStore = useCartStore()
-const router = useRouter()
 
 const deliveryAddress = ref('')
 const loading = ref(false)
@@ -15,11 +13,13 @@ const successMessage = ref('')
 
 const placeOrder = async () => {
   if (!deliveryAddress.value.trim()) {
+    successMessage.value = ''
     errorMessage.value = 'Please enter your delivery address.'
     return
   }
 
   if (cartStore.cartItems.length === 0) {
+    successMessage.value = ''
     errorMessage.value = 'Your cart is empty.'
     return
   }
@@ -41,9 +41,11 @@ const placeOrder = async () => {
       response.data.message || 'Your order was placed successfully!'
 
     cartStore.clearCart()
+    errorMessage.value = ''
 
   } catch (error) {
     console.error('Order error:', error)
+    successMessage.value = ''
 
     errorMessage.value =
       error.response?.data?.message ||

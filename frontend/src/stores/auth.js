@@ -61,7 +61,7 @@ export const useAuthStore = defineStore('auth', () => {
 
     try {
       const response = await api.get('/user')
-      user.value = response.data.user
+      user.value = response.data.user ?? response.data
     } catch (err) {
       user.value = null
       token.value = null

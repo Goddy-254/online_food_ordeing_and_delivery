@@ -8,4 +8,18 @@ const api = axios.create({
     }
 })
 
+// Sanctum personal access tokens must be sent on every protected API request.
+// Read from localStorage at request time so login/logout changes apply at once.
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem('token')
+
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`
+    } else {
+        delete config.headers.Authorization
+    }
+
+    return config
+})
+
 export default api
