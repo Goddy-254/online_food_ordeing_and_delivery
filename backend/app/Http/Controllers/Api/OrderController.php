@@ -49,8 +49,6 @@ class OrderController extends Controller
                 'status' => 'pending',
             ]);
 
-            $totalAmount = 0;
-
             // Loop through the ordered items
             foreach ($validated['items'] as $item) {
 
@@ -60,21 +58,20 @@ class OrderController extends Controller
 
                 $quantity = $item['quantity'];
 
-                // Calculate item subtotal
-                $subtotal = $menuItem->price * $quantity;
-
                 // Save the order item
                 $order->orderItems()->create([
                     'menu_item_id' => $menuItem->id,
                     'quantity' => $quantity,
                     'price' => $menuItem->price,
                 ]);
-
-                // Add subtotal to total
-                $totalAmount += $subtotal;
             }
 
-            // Update the order with the calculated total
+            // Let the database calculate this using its decimal columns. This
+            // avoids floating-point rounding errors when prices have cents.
+            $totalAmount = $order->orderItems()
+                ->selectRaw('COALESCE(SUM(price * quantity), 0) as total')
+                ->value('total');
+
             $order->update([
                 'total_amount' => $totalAmount
             ]);
