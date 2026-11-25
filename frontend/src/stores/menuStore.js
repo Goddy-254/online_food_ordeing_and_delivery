@@ -9,55 +9,68 @@ export const useMenuStore = defineStore('menu', () => {
     const categories = ref([])
     const menuItems = ref([])
 
-    const loading = ref(false)
-    const error = ref(null)
+    const categoriesError = ref(null)
+    const menuItemsError = ref(null)
+
+    const categoriesLoading = ref(false)
+    const menuItemsLoading = ref(false)
 
     // Fetch categories
     const fetchCategories = async () => {
         try {
-            loading.value = true
-            error.value = null
+            categoriesLoading.value = true
+            categoriesError.value = null
 
             const response = await api.get('/categories')
 
             categories.value = response.data.data ?? response.data
 
         } catch (err) {
-            error.value = err.response?.data?.message || 'Failed to fetch categories'
+            categoriesError.value =
+                err.response?.data?.message ||
+                'Failed to fetch categories'
 
-            console.error(err)
+            console.error('Categories error:', err)
 
         } finally {
-            loading.value = false
+            categoriesLoading.value = false
         }
     }
 
     // Fetch menu items
     const fetchMenuItems = async () => {
         try {
-            loading.value = true
-            error.value = null
+            menuItemsLoading.value = true
+            menuItemsError.value = null
 
             const response = await api.get('/menu-items')
 
             menuItems.value = response.data.data ?? response.data
 
         } catch (err) {
-            error.value = err.response?.data?.message || 'Failed to fetch menu items'
+            menuItemsError.value =
+                err.response?.data?.message ||
+                'Failed to fetch menu items'
 
-            console.error(err)
+            console.error('Menu items error:', err)
 
         } finally {
-            loading.value = false
+            menuItemsLoading.value = false
         }
     }
 
     return {
         categories,
         menuItems,
-        loading,
-        error,
+
+        categoriesError,
+        menuItemsError,
+
+        categoriesLoading,
+        menuItemsLoading,
+
         fetchCategories,
         fetchMenuItems
     }
 })
+
