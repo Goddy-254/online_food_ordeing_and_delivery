@@ -13,7 +13,7 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 //categories routes
-Route::apiResource('categories', CategoryController::class);
+Route::apiResource('/categories', CategoryController::class);
 
 // Menu item routes
 Route::apiResource('/menu-items', MenuItemController::class);
