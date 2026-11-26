@@ -1,6 +1,6 @@
 
 <script setup>
-import { ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useCartStore } from '@/stores/cart'
 import api from '@/services/api'
 
@@ -10,6 +10,17 @@ const deliveryAddress = ref('')
 const loading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
+const storeInfo = ref({ delivery_fee: 0, operating_hours: '', store_open: true })
+const orderTotal = computed(() => cartStore.cartTotal + Number(storeInfo.value.delivery_fee || 0))
+
+onMounted(async () => {
+  try {
+    const { data } = await api.get('/store-info')
+    storeInfo.value = data
+  } catch {
+    // Checkout still works with a zero delivery fee if store info is unavailable.
+  }
+})
 
 const placeOrder = async () => {
   if (!deliveryAddress.value.trim()) {
@@ -21,6 +32,12 @@ const placeOrder = async () => {
   if (cartStore.cartItems.length === 0) {
     successMessage.value = ''
     errorMessage.value = 'Your cart is empty.'
+    return
+  }
+
+  if (!storeInfo.value.store_open) {
+    successMessage.value = ''
+    errorMessage.value = 'The store is currently closed and cannot accept orders.'
     return
   }
 
@@ -110,9 +127,16 @@ const placeOrder = async () => {
           Include your estate, building, street or any useful delivery directions.
         </p>
 
+        <p v-if="storeInfo.operating_hours" class="mt-3 text-sm text-gray-500">
+          Store hours: {{ storeInfo.operating_hours }}
+        </p>
+        <p v-if="!storeInfo.store_open" class="mt-3 rounded-lg bg-amber-50 p-3 text-sm font-semibold text-amber-800">
+          The store is currently closed and cannot accept orders.
+        </p>
+
         <button
           type="submit"
-          :disabled="loading || cartStore.cartItems.length === 0"
+          :disabled="loading || cartStore.cartItems.length === 0 || !storeInfo.store_open"
           class="w-full mt-6 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold"
         >
           {{ loading ? 'Placing Order...' : 'Place Order' }}
@@ -148,11 +172,21 @@ const placeOrder = async () => {
         </div>
 
         <div class="flex justify-between mt-6 text-lg font-bold">
-          <span>Total</span>
+          <span>Items subtotal</span>
 
           <span class="text-green-600">
             KSh {{ cartStore.cartTotal.toFixed(2) }}
           </span>
+        </div>
+
+        <div class="mt-3 flex justify-between text-sm text-gray-600">
+          <span>Delivery fee</span>
+          <span>KSh {{ Number(storeInfo.delivery_fee || 0).toFixed(2) }}</span>
+        </div>
+
+        <div class="mt-3 flex justify-between border-t pt-3 text-lg font-bold">
+          <span>Total</span>
+          <span class="text-green-600">KSh {{ orderTotal.toFixed(2) }}</span>
         </div>
 
       </div>

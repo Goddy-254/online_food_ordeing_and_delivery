@@ -36,6 +36,10 @@ class CategoryController extends Controller
 
         $validated['slug'] = Str::slug($validated['name']);
 
+        if (Category::where('slug', $validated['slug'])->exists()) {
+            return response()->json(['message' => 'A category with this name already exists.'], 422);
+        }
+
         $category = Category::create($validated);
 
         return response()->json([
@@ -70,6 +74,10 @@ class CategoryController extends Controller
 
         $validated['slug'] = Str::slug($validated['name']);
 
+        if (Category::where('slug', $validated['slug'])->where('id', '!=', $category->id)->exists()) {
+            return response()->json(['message' => 'A category with this name already exists.'], 422);
+        }
+
         $category->update($validated);
 
         return response()->json([
@@ -84,7 +92,13 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category)
     {
-        //
+        // Keep the foreign-key failure out of the admin UI when a category is in use.
+        if ($category->menuItems()->exists()) {
+            return response()->json([
+                'message' => 'Move or remove this category’s menu items before deleting it.',
+            ], 409);
+        }
+
         $category->delete();
 
         return response()->json([

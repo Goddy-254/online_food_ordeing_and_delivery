@@ -11,6 +11,7 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'total_amount',
+        'delivery_fee',
         'status',
         'delivery_address'
     ];
@@ -19,6 +20,7 @@ class Order extends Model
     {
         return [
             'total_amount' => 'decimal:2',
+            'delivery_fee' => 'decimal:2',
         ];
     }
 

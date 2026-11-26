@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\MenuItem;
 use App\Models\Order;
+use App\Models\AppSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -29,6 +30,15 @@ class OrderController extends Controller
     // Create a new order
     public function store(Request $request)
     {
+        // Honor the store's published open/closed control before accepting an order.
+        $storeOpen = AppSetting::where('key', 'store_open')->value('value') ?? '1';
+
+        if ($storeOpen !== '1') {
+            return response()->json([
+                'message' => 'The store is currently closed and cannot accept orders.',
+            ], 403);
+        }
+
         $validated = $request->validate([
             'delivery_address' => 'required|string|max:255',
 
@@ -39,12 +49,15 @@ class OrderController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
         ]);
 
-        $order = DB::transaction(function () use ($validated, $request) {
+        $deliveryFee = AppSetting::where('key', 'delivery_fee')->value('value') ?? '0.00';
+
+        $order = DB::transaction(function () use ($validated, $request, $deliveryFee) {
 
             // Create the order first
             $order = Order::create([
                 'user_id' => $request->user()->id,
                 'delivery_address' => $validated['delivery_address'],
+                'delivery_fee' => $deliveryFee,
                 'total_amount' => 0,
                 'status' => 'pending',
             ]);
@@ -55,6 +68,10 @@ class OrderController extends Controller
                 $menuItem = MenuItem::findOrFail(
                     $item['menu_item_id']
                 );
+
+                if (!$menuItem->is_available) {
+                    abort(422, "{$menuItem->name} is currently unavailable.");
+                }
 
                 $quantity = $item['quantity'];
 
@@ -69,7 +86,7 @@ class OrderController extends Controller
             // Let the database calculate this using its decimal columns. This
             // avoids floating-point rounding errors when prices have cents.
             $totalAmount = $order->orderItems()
-                ->selectRaw('COALESCE(SUM(price * quantity), 0) as total')
+                ->selectRaw('COALESCE(SUM(price * quantity), 0) + ? as total', [$deliveryFee])
                 ->value('total');
 
             $order->update([

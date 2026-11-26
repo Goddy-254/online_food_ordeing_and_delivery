@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -38,13 +39,10 @@ public function update(Request $request, string $orderId, string $itemId)
             'quantity' => $validated['quantity']
         ]);
 
-        // Retrieve all items belonging to this order
-        $orderItems = $order->orderItems()->get();
-
-        // Calculate the new total
-        $total = $orderItems->sum(function ($item) {
-            return $item->price * $item->quantity;
-        });
+        // Let SQL sum the decimal snapshots and preserve the delivery fee.
+        $total = $order->orderItems()
+            ->selectRaw('COALESCE(SUM(price * quantity), 0) + ? as total', [$order->delivery_fee])
+            ->value('total');
 
         // Save the new total in the orders table
         $order->update([
@@ -80,7 +78,7 @@ public function update(Request $request, string $orderId, string $itemId)
 
             // Recalculate the total
             $total = $order->orderItems()
-                ->selectRaw('COALESCE(SUM(price * quantity), 0) as total')
+                ->selectRaw('COALESCE(SUM(price * quantity), 0) + ? as total', [$order->delivery_fee])
                 ->value('total');
 
             $order->update([

@@ -13,12 +13,22 @@ class MenuItemController extends Controller
      */
     public function index()
     {
-        $menuItems = MenuItem::with('category')->latest()->get();
+        // Customers should only see dishes currently available to order.
+        $menuItems = MenuItem::with('category')->where('is_available', true)->latest()->get();
 
         return response()->json([
             'message' => 'Menu items retrieved successfully',
             'data' => $menuItems
         ], 200);
+    }
+
+    /** Administrators need to see both available and hidden menu items. */
+    public function adminIndex()
+    {
+        return response()->json([
+            'message' => 'Menu items retrieved successfully',
+            'data' => MenuItem::with('category')->latest()->get(),
+        ]);
     }
 
     /**
@@ -31,6 +41,7 @@ class MenuItemController extends Controller
             'name' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|string|max:2048',
+            'is_available' => 'sometimes|boolean',
         ]);
 
         $menuItem = MenuItem::create($validated);
@@ -66,6 +77,7 @@ class MenuItemController extends Controller
             'name' => 'sometimes|required|string|max:255',
             'price' => 'sometimes|required|numeric|min:0',
             'image' => 'sometimes|nullable|string|max:2048',
+            'is_available' => 'sometimes|boolean',
         ]);
 
         $menuItem->update($validated);
@@ -82,6 +94,13 @@ class MenuItemController extends Controller
     public function destroy(string $id)
     {
         $menuItem = MenuItem::findOrFail($id);
+
+        // Order lines preserve the original menu item reference for receipts.
+        if ($menuItem->orderItems()->exists()) {
+            return response()->json([
+                'message' => 'This item is already part of an order and cannot be deleted.',
+            ], 409);
+        }
 
         $menuItem->delete();
 

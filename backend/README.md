@@ -7,6 +7,26 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+## Admin portal setup
+
+Run the database migrations before using the admin portal. They add store settings,
+delivery fee snapshots on orders, and menu item availability:
+
+```sh
+php artisan migrate
+```
+
+Create the first administrator from the backend directory. The command prompts for
+an email and password and does not expose administrator creation through registration:
+
+```sh
+php artisan admin:create
+```
+
+Open `/admin/login` in the Vue application to sign in. Use **Users & roles** to grant
+administrator access to additional accounts. The backend checks the admin role on
+every `/api/admin/*` request.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
