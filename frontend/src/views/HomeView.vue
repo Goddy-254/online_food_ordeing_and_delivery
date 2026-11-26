@@ -78,77 +78,85 @@ onMounted(async () => {
         </div>
       </div>
 
-      <!-- A compact benefits strip provides useful context without unsupported promises. -->
-      <div class="grid gap-4 border-b border-slate-200 py-7 sm:grid-cols-3 sm:gap-6 lg:py-9">
-        <div class="flex items-center gap-3"><span class="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 text-xl">🥬</span><div><p class="font-extrabold">Prepared to order</p><p class="text-sm text-slate-500">Made fresh when you order</p></div></div>
-        <div class="flex items-center gap-3"><span class="grid h-11 w-11 place-items-center rounded-xl bg-orange-100 text-xl">🛵</span><div><p class="font-extrabold">Delivered to you</p><p class="text-sm text-slate-500">Add your delivery details at checkout</p></div></div>
-        <div class="flex items-center gap-3"><span class="grid h-11 w-11 place-items-center rounded-xl bg-sky-100 text-xl">📱</span><div><p class="font-extrabold">Easy online ordering</p><p class="text-sm text-slate-500">Browse, add to cart, and check out</p></div></div>
+      <!-- Simple service highlights sit just below the hero as a quick trust-building summary. -->
+      <div class="grid gap-3 pt-5 sm:grid-cols-3 lg:gap-4 lg:pt-6">
+        <div class="group flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5"><span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-emerald-50 text-2xl ring-1 ring-emerald-100">🥬</span><div><p class="font-extrabold text-slate-900">Prepared to order</p><p class="mt-1 text-sm text-slate-500">Made fresh when you order</p></div></div>
+        <div class="group flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5"><span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-orange-50 text-2xl ring-1 ring-orange-100">🛵</span><div><p class="font-extrabold text-slate-900">Delivered to you</p><p class="mt-1 text-sm text-slate-500">Add delivery details at checkout</p></div></div>
+        <div class="group flex items-center gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md sm:p-5"><span class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sky-50 text-2xl ring-1 ring-sky-100">📱</span><div><p class="font-extrabold text-slate-900">Easy online ordering</p><p class="mt-1 text-sm text-slate-500">Browse, add to cart, and check out</p></div></div>
       </div>
     </section>
 
     <!-- Category shortcuts keep browsing simple on small and large screens. -->
-    <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
-      <div class="mb-7 flex items-end justify-between gap-4">
-        <div><p class="text-xs font-extrabold uppercase tracking-[.18em] text-emerald-700">Find your craving</p><h2 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">What sounds good?</h2></div>
-        <RouterLink to="/menu" class="hidden text-sm font-extrabold text-emerald-800 hover:text-emerald-600 sm:block">See full menu →</RouterLink>
+    <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+      <div class="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+        <div><p class="inline-flex items-center gap-2 rounded-full bg-emerald-100 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[.16em] text-emerald-800"><span class="h-1.5 w-1.5 rounded-full bg-emerald-600" />Find your craving</p><h2 class="mt-3 text-3xl font-black tracking-tight sm:text-4xl lg:text-[2.75rem]">What sounds good?</h2><p class="mt-2 max-w-xl text-sm leading-6 text-slate-500 sm:text-base">Pick a category and find the thing you’ve been craving.</p></div>
+        <RouterLink to="/menu" class="hidden items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-extrabold text-slate-800 transition hover:border-emerald-300 hover:bg-emerald-50 sm:inline-flex">See full menu <span aria-hidden="true">→</span></RouterLink>
       </div>
       <div v-if="categoryCards.length" class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
-        <RouterLink v-for="category in categoryCards" :key="category.id" :to="{ name: 'menu', query: { category: category.id } }" class="group rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition hover:-translate-y-1 hover:border-emerald-200 hover:shadow-lg sm:p-5">
-          <span class="grid h-14 w-14 place-items-center rounded-2xl text-3xl transition group-hover:scale-105" :class="category.color">{{ category.icon }}</span>
-          <h3 class="mt-4 font-black text-slate-900">{{ category.name }}</h3>
-          <p class="mt-1 text-xs leading-5 text-slate-500">{{ category.description }}</p>
+        <RouterLink v-for="category in categoryCards" :key="category.id" :to="{ name: 'menu', query: { category: category.id } }" class="group relative isolate min-h-44 overflow-hidden rounded-[1.5rem] border border-white/80 p-4 shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl sm:min-h-52 sm:p-5" :class="category.color">
+          <span class="absolute -right-5 -top-6 -z-10 h-28 w-28 rounded-full bg-white/50 transition duration-500 group-hover:scale-125 sm:h-36 sm:w-36" />
+          <div class="flex h-full flex-col justify-between">
+            <span class="grid h-14 w-14 place-items-center rounded-2xl bg-white/80 text-3xl shadow-sm ring-1 ring-white transition duration-300 group-hover:rotate-3 group-hover:scale-105 sm:h-16 sm:w-16 sm:text-4xl">{{ category.icon }}</span>
+            <div class="mt-5 flex items-end justify-between gap-2"><div><h3 class="font-black text-slate-900 sm:text-lg">{{ category.name }}</h3><p class="mt-1 text-xs leading-5 text-slate-600">{{ category.description }}</p></div><span class="mb-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white/80 text-sm font-bold text-slate-800 transition group-hover:bg-slate-900 group-hover:text-white" aria-hidden="true">↗</span></div>
+          </div>
         </RouterLink>
       </div>
-      <div v-else class="rounded-2xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">Browse all dishes and categories in our menu.</div>
-      <RouterLink to="/menu" class="mt-5 inline-flex font-extrabold text-emerald-800 sm:hidden">See full menu →</RouterLink>
+      <div v-else class="rounded-3xl border border-dashed border-slate-300 bg-white p-8 text-center text-slate-500">Browse all dishes and categories in our menu.</div>
+      <RouterLink to="/menu" class="mt-5 inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-extrabold text-slate-800 sm:hidden">See full menu <span aria-hidden="true">→</span></RouterLink>
     </section>
 
     <!-- Featured dishes are loaded from the same API used by the menu page. -->
-    <section class="bg-white py-12 sm:py-16">
+    <section class="relative overflow-hidden border-y border-slate-200/70 bg-white py-14 sm:py-20">
+      <div class="pointer-events-none absolute -right-28 top-0 h-72 w-72 rounded-full bg-orange-100/70 blur-3xl" />
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="mb-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div><p class="text-xs font-extrabold uppercase tracking-[.18em] text-emerald-700">A taste of the menu</p><h2 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Fresh from our kitchen</h2><p class="mt-2 text-slate-500">A few favorites to get you started.</p></div>
-          <RouterLink to="/menu" class="font-extrabold text-emerald-800 hover:text-emerald-600">Explore every dish →</RouterLink>
+        <div class="relative mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end lg:mb-10">
+          <div><p class="inline-flex rounded-full bg-orange-100 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[.16em] text-orange-800">A taste of the menu</p><h2 class="mt-3 text-3xl font-black tracking-tight sm:text-4xl lg:text-[2.75rem]">Fresh from our kitchen</h2><p class="mt-2 text-slate-500">A few dishes to get your next meal started.</p></div>
+          <RouterLink to="/menu" class="inline-flex items-center gap-2 text-sm font-extrabold text-emerald-800 transition hover:text-emerald-600">Explore every dish <span aria-hidden="true">→</span></RouterLink>
         </div>
 
-        <div v-if="menuStore.menuItemsLoading" class="rounded-2xl bg-slate-50 p-10 text-center text-slate-500">Loading today’s menu…</div>
-        <div v-else-if="featuredItems.length" class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          <article v-for="food in featuredItems" :key="food.id" class="group overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-            <div class="relative h-56 overflow-hidden bg-emerald-50">
-              <img v-if="food.image" :src="food.image" :alt="food.name" loading="lazy" class="h-full w-full object-cover transition duration-500 group-hover:scale-105">
+        <div v-if="menuStore.menuItemsLoading" class="rounded-3xl border border-slate-200 bg-slate-50 p-10 text-center text-slate-500"><span class="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-white text-2xl shadow-sm">🍳</span>Loading today’s menu…</div>
+        <div v-else-if="featuredItems.length" class="relative grid gap-5 sm:grid-cols-2 lg:grid-cols-3 lg:gap-6">
+          <article v-for="food in featuredItems" :key="food.id" class="group overflow-hidden rounded-[1.6rem] border border-slate-200/80 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl">
+            <div class="relative h-56 overflow-hidden bg-emerald-50 sm:h-60">
+              <img v-if="food.image" :src="food.image" :alt="food.name" loading="lazy" class="h-full w-full object-cover transition duration-700 group-hover:scale-105">
               <div v-else class="grid h-full place-items-center text-6xl">🍽️</div>
-              <span v-if="food.category?.name" class="absolute left-4 top-4 rounded-full bg-white/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm">{{ food.category.name }}</span>
+              <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-slate-950/30 to-transparent" />
+              <span v-if="food.category?.name" class="absolute left-4 top-4 rounded-full border border-white/70 bg-white/95 px-3 py-1.5 text-xs font-bold text-slate-700 shadow-sm backdrop-blur">{{ food.category.name }}</span>
             </div>
-            <div class="p-5">
-              <h3 class="text-lg font-black text-slate-900">{{ food.name }}</h3>
-              <p class="mt-1 text-sm text-slate-500">Freshly prepared and ready to enjoy.</p>
-              <div class="mt-5 flex items-center justify-between gap-3">
+            <div class="p-5 sm:p-6">
+              <div class="min-h-14"><h3 class="text-lg font-black text-slate-900">{{ food.name }}</h3><p class="mt-1 line-clamp-2 text-sm leading-5 text-slate-500">{{ food.description || 'Freshly prepared and ready to enjoy.' }}</p></div>
+              <div class="mt-5 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
                 <p class="text-lg font-black text-emerald-800">{{ currency.format(Number(food.price)) }}</p>
-                <button class="rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700" @click="cartStore.addToCart(food)">Add to cart <span aria-hidden="true">+</span></button>
+                <button class="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-200" @click="cartStore.addToCart(food)">Add to cart <span class="grid h-5 w-5 place-items-center rounded-full bg-white/15" aria-hidden="true">+</span></button>
               </div>
             </div>
           </article>
         </div>
-        <div v-else class="rounded-2xl border border-slate-200 bg-slate-50 p-9 text-center">
+        <div v-else class="rounded-3xl border border-slate-200 bg-slate-50 p-9 text-center sm:p-12">
           <span class="text-4xl">🍽️</span><h3 class="mt-3 text-lg font-black">The menu is getting ready</h3><p class="mt-1 text-sm text-slate-500">Visit the full menu to see what’s available.</p><RouterLink to="/menu" class="mt-4 inline-flex rounded-xl bg-emerald-700 px-5 py-2.5 text-sm font-bold text-white">Browse menu</RouterLink>
         </div>
       </div>
     </section>
 
     <!-- Three short steps make the first order flow clear for new customers. -->
-    <section id="how-it-works" class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-      <div class="mx-auto max-w-2xl text-center"><p class="text-xs font-extrabold uppercase tracking-[.18em] text-emerald-700">Simple from start to finish</p><h2 class="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Good food in three easy steps</h2></div>
-      <div class="mt-10 grid gap-4 md:grid-cols-3">
-        <article class="rounded-2xl border border-slate-200 bg-white p-6"><span class="grid h-11 w-11 place-items-center rounded-xl bg-emerald-100 font-black text-emerald-800">01</span><h3 class="mt-5 text-lg font-black">Explore the menu</h3><p class="mt-2 text-sm leading-6 text-slate-500">Browse pizzas, burgers, chicken, drinks, and more.</p></article>
-        <article class="rounded-2xl border border-slate-200 bg-white p-6"><span class="grid h-11 w-11 place-items-center rounded-xl bg-orange-100 font-black text-orange-800">02</span><h3 class="mt-5 text-lg font-black">Build your order</h3><p class="mt-2 text-sm leading-6 text-slate-500">Choose your favorites and set the quantity that works for you.</p></article>
-        <article class="rounded-2xl border border-slate-200 bg-white p-6"><span class="grid h-11 w-11 place-items-center rounded-xl bg-sky-100 font-black text-sky-800">03</span><h3 class="mt-5 text-lg font-black">Check out</h3><p class="mt-2 text-sm leading-6 text-slate-500">Sign in, add your delivery address, and place your order.</p></article>
+    <section id="how-it-works" class="relative isolate overflow-hidden bg-[#122b22] py-16 text-white sm:py-20">
+      <div class="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_80%_0%,_rgba(34,197,94,.16),_transparent_42%)]" />
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center"><p class="text-xs font-extrabold uppercase tracking-[.18em] text-emerald-300">Simple from start to finish</p><h2 class="mt-3 text-3xl font-black tracking-tight sm:text-4xl lg:text-[2.75rem]">Good food in three easy steps</h2><p class="mt-3 text-sm leading-6 text-emerald-50/70 sm:text-base">From choosing a dish to confirming your order, we keep it straightforward.</p></div>
+        <div class="relative mt-10 grid gap-4 md:grid-cols-3 lg:mt-14 lg:gap-6">
+          <div class="absolute left-[16.5%] right-[16.5%] top-8 hidden border-t border-dashed border-emerald-100/25 md:block" />
+          <article class="relative rounded-3xl border border-white/10 bg-white/[.06] p-6 backdrop-blur-sm transition hover:bg-white/[.09] sm:p-7"><span class="relative z-10 grid h-16 w-16 place-items-center rounded-2xl border border-emerald-200/20 bg-[#17392c] text-xl font-black text-emerald-200 shadow-lg shadow-black/10">01</span><h3 class="mt-6 text-lg font-black">Explore the menu</h3><p class="mt-2 text-sm leading-6 text-emerald-50/65">Browse pizzas, burgers, chicken, drinks, and more.</p></article>
+          <article class="relative rounded-3xl border border-white/10 bg-white/[.06] p-6 backdrop-blur-sm transition hover:bg-white/[.09] sm:p-7"><span class="relative z-10 grid h-16 w-16 place-items-center rounded-2xl border border-orange-200/20 bg-[#3d3023] text-xl font-black text-orange-200 shadow-lg shadow-black/10">02</span><h3 class="mt-6 text-lg font-black">Build your order</h3><p class="mt-2 text-sm leading-6 text-emerald-50/65">Choose your favorites and set the quantity that works for you.</p></article>
+          <article class="relative rounded-3xl border border-white/10 bg-white/[.06] p-6 backdrop-blur-sm transition hover:bg-white/[.09] sm:p-7"><span class="relative z-10 grid h-16 w-16 place-items-center rounded-2xl border border-sky-200/20 bg-[#203846] text-xl font-black text-sky-200 shadow-lg shadow-black/10">03</span><h3 class="mt-6 text-lg font-black">Check out</h3><p class="mt-2 text-sm leading-6 text-emerald-50/65">Sign in, add your delivery address, and place your order.</p></article>
+        </div>
       </div>
     </section>
 
     <section class="mx-auto max-w-7xl px-4 pb-14 sm:px-6 lg:px-8 lg:pb-20">
-      <div class="flex flex-col items-start justify-between gap-6 rounded-[2rem] bg-emerald-100 p-7 sm:p-10 md:flex-row md:items-center lg:px-14">
-        <div><p class="text-xs font-extrabold uppercase tracking-[.18em] text-emerald-800">Ready when you are</p><h2 class="mt-2 max-w-2xl text-3xl font-black leading-tight text-emerald-950 sm:text-4xl">Make your next meal the easy part of your day.</h2></div>
-        <RouterLink to="/menu" class="shrink-0 rounded-xl bg-emerald-800 px-6 py-3.5 font-extrabold text-white shadow-lg shadow-emerald-900/10 transition hover:-translate-y-0.5 hover:bg-emerald-700">Order something good →</RouterLink>
+      <div class="relative -mt-7 flex flex-col items-start justify-between gap-6 overflow-hidden rounded-[2rem] border border-emerald-900/5 bg-emerald-100 p-7 shadow-xl shadow-emerald-950/5 sm:p-10 md:flex-row md:items-center lg:-mt-9 lg:px-14 lg:py-12">
+        <div class="pointer-events-none absolute -right-8 -top-16 h-56 w-56 rounded-full border-[28px] border-emerald-200/60" />
+        <div class="relative"><p class="text-xs font-extrabold uppercase tracking-[.18em] text-emerald-800">Ready when you are</p><h2 class="mt-2 max-w-2xl text-3xl font-black leading-tight text-emerald-950 sm:text-4xl">Make your next meal the easy part of your day.</h2></div>
+        <RouterLink to="/menu" class="relative inline-flex shrink-0 items-center gap-2 rounded-xl bg-emerald-800 px-6 py-3.5 font-extrabold text-white shadow-lg shadow-emerald-900/15 transition hover:-translate-y-0.5 hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-emerald-300">Order something good <span aria-hidden="true">→</span></RouterLink>
       </div>
     </section>
 
