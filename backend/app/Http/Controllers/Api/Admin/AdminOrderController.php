@@ -18,7 +18,11 @@ class AdminOrderController extends Controller
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        $orders = Order::with('user:id,name,email')
+        $orders = Order::with([
+            'user:id,name,email',
+            // Payment status on the order list helps staff spot pending or cancelled prompts.
+            'payments' => fn ($query) => $query->latest('id'),
+        ])
             ->withCount('orderItems')
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
             ->when($filters['search'] ?? null, function ($query, $search) {
@@ -53,6 +57,24 @@ class AdminOrderController extends Controller
         $validated = $request->validate([
             'status' => ['required', Rule::in(['pending', 'preparing', 'out_for_delivery', 'delivered', 'cancelled'])],
         ]);
+
+        // New M-Pesa orders cannot enter fulfillment until a callback confirms payment.
+        $fulfillmentStatuses = ['preparing', 'out_for_delivery', 'delivered'];
+        $hasMpesaAttempt = $order->payments()->where('payment_method', 'mpesa')->exists();
+        $hasConfirmedMpesaPayment = $order->payments()
+            ->where('payment_method', 'mpesa')
+            ->where('status', 'paid')
+            ->exists();
+
+        if (
+            $hasMpesaAttempt
+            && in_array($validated['status'], $fulfillmentStatuses, true)
+            && !$hasConfirmedMpesaPayment
+        ) {
+            return response()->json([
+                'message' => 'This order cannot enter fulfillment until M-Pesa payment is confirmed.',
+            ], 422);
+        }
 
         $order->update(['status' => $validated['status']]);
 

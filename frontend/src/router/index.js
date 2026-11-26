@@ -10,17 +10,20 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
+      meta: { customerArea: true },
     },
 
     {
       path: '/menu',
       name: 'menu',
       component: () => import('../views/menuView.vue'),
+      meta: { customerArea: true },
     },
     {
       path: '/cart',
       name: 'cart',
       component: () => import('../views/CartView.vue'),
+      meta: { customerArea: true },
     },
 
 
@@ -28,18 +31,20 @@ const router = createRouter({
       path: '/checkout',
       name: 'checkout',
       component: () => import('../views/CheckOutView.vue'),
-      meta: { requiresAuth: true },
+      meta: { customerArea: true, requiresAuth: true },
     },
 
     {
       path: '/login',
       name: 'login',
       component: () => import('../views/Loginview.vue'),
+      meta: { customerArea: true },
     },
     {
       path: '/register',
       name: 'register',
       component: () => import('../views/RegisterView.vue'),
+      meta: { customerArea: true },
     },
     {
       path: '/admin/login',
@@ -66,15 +71,30 @@ const router = createRouter({
   ],
 })
 
+// The role snapshot is only for navigation UX; Laravel middleware remains the security boundary.
+function hasAdminSession() {
+  try {
+    return Boolean(localStorage.getItem('admin_token') && JSON.parse(localStorage.getItem('admin_user') || 'null')?.role === 'admin')
+  } catch {
+    return false
+  }
+}
+
 router.beforeEach((to) => {
-  if (to.meta.requiresAdmin && !localStorage.getItem('admin_token')) {
+  const isAdmin = hasAdminSession()
+
+  if (to.meta.requiresAdmin && !isAdmin) {
     return {
       name: 'admin-login',
       query: { redirect: to.fullPath },
     }
   }
 
-  if (to.name === 'admin-login' && localStorage.getItem('admin_token')) {
+  if (to.meta.customerArea && isAdmin) {
+    return { name: 'admin-dashboard' }
+  }
+
+  if (to.name === 'admin-login' && isAdmin) {
     return { name: 'admin-dashboard' }
   }
 

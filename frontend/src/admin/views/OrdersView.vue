@@ -13,6 +13,17 @@ const errorMessage = ref('')
 const currency = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 0 })
 const statuses = ['pending', 'preparing', 'out_for_delivery', 'delivered', 'cancelled']
 
+// The API returns payment attempts newest first; show the current attempt in the table.
+function currentPayment(order) {
+  return order.payments?.[0] || null
+}
+
+function paymentStatus(payment) {
+  return payment?.status === 'failed' && Number(payment.result_code) === 1032
+    ? 'cancelled'
+    : payment?.status
+}
+
 async function loadOrders(page = 1) {
   loading.value = true
   errorMessage.value = ''
@@ -44,20 +55,28 @@ onMounted(() => loadOrders())
     </form>
 
     <div class="overflow-x-auto">
-      <table class="w-full min-w-[760px] text-left text-sm">
-        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-5 py-4">Order</th><th class="px-5 py-4">Customer</th><th class="px-5 py-4">Items</th><th class="px-5 py-4">Total</th><th class="px-5 py-4">Status</th><th class="px-5 py-4">Placed</th><th class="px-5 py-4"></th></tr></thead>
+      <table class="w-full min-w-[900px] text-left text-sm">
+        <thead class="bg-slate-50 text-xs uppercase tracking-wide text-slate-500"><tr><th class="px-5 py-4">Order</th><th class="px-5 py-4">Customer</th><th class="px-5 py-4">Items</th><th class="px-5 py-4">Total</th><th class="px-5 py-4">Payment</th><th class="px-5 py-4">Order status</th><th class="px-5 py-4">Placed</th><th class="px-5 py-4"></th></tr></thead>
         <tbody class="divide-y divide-slate-100">
           <tr v-for="order in results.data" :key="order.id" class="hover:bg-slate-50">
             <td class="px-5 py-4 font-bold">#{{ order.id }}</td>
             <td class="px-5 py-4"><p class="font-semibold text-slate-800">{{ order.user?.name || 'Customer' }}</p><p class="mt-1 text-xs text-slate-500">{{ order.user?.email }}</p></td>
             <td class="px-5 py-4">{{ order.order_items_count }}</td>
             <td class="px-5 py-4 font-bold">{{ currency.format(Number(order.total_amount)) }}</td>
+            <td class="px-5 py-4">
+              <div v-if="currentPayment(order)" class="space-y-1.5">
+                <p class="text-xs font-semibold capitalize text-slate-500">{{ currentPayment(order).payment_method.replaceAll('_', ' ') }}</p>
+                <StatusPill :status="paymentStatus(currentPayment(order))" />
+                <p v-if="paymentStatus(currentPayment(order)) === 'cancelled'" class="text-xs text-red-700">Cancelled by customer</p>
+              </div>
+              <span v-else class="text-xs text-slate-400">No payment record</span>
+            </td>
             <td class="px-5 py-4"><StatusPill :status="order.status" /></td>
             <td class="px-5 py-4 text-slate-500">{{ new Date(order.created_at).toLocaleDateString() }}</td>
             <td class="px-5 py-4 text-right"><RouterLink :to="{ name: 'admin-order-details', params: { id: order.id } }" class="font-bold text-emerald-700 hover:underline">Details</RouterLink></td>
           </tr>
-          <tr v-if="!loading && !results.data.length"><td colspan="7" class="px-5 py-12 text-center text-slate-500">No matching orders found.</td></tr>
-          <tr v-if="loading"><td colspan="7" class="px-5 py-12 text-center text-slate-500">Loading orders…</td></tr>
+          <tr v-if="!loading && !results.data.length"><td colspan="8" class="px-5 py-12 text-center text-slate-500">No matching orders found.</td></tr>
+          <tr v-if="loading"><td colspan="8" class="px-5 py-12 text-center text-slate-500">Loading orders…</td></tr>
         </tbody>
       </table>
     </div>

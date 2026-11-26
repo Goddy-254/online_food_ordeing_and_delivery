@@ -56,7 +56,7 @@ onMounted(loadSettings)
   <form v-else class="max-w-3xl space-y-6" @submit.prevent="saveSettings">
     <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div class="mb-6"><h2 class="text-lg font-black">Delivery</h2><p class="mt-1 text-sm text-slate-500">This fee will be added to new customer orders and saved with each order.</p></div>
-      <label class="block max-w-sm text-sm font-semibold text-slate-700">Delivery fee (KSh)<input v-model.number="settings.delivery_fee" type="number" min="0" step="0.01" required class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"></label>
+      <label class="block max-w-sm text-sm font-semibold text-slate-700">Delivery fee (KSh)<input v-model.number="settings.delivery_fee" type="number" min="0" step="1" required class="mt-2 w-full rounded-xl border border-slate-300 px-4 py-3"></label>
     </section>
     <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div class="mb-6"><h2 class="text-lg font-black">Hours & availability</h2><p class="mt-1 text-sm text-slate-500">Customers can see your hours; closing the store blocks new orders on the server.</p></div>

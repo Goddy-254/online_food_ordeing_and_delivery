@@ -93,6 +93,13 @@ class OrderController extends Controller
                 'total_amount' => $totalAmount
             ]);
 
+            // Keep an unpaid payment record from the moment this order is placed.
+            $order->payments()->create([
+                'amount' => $totalAmount,
+                'payment_method' => 'mpesa',
+                'status' => 'uninitiated',
+            ]);
+
             return $order;
         });
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\MenuItemController;
 use App\Http\Controllers\Api\OrderController;
 use App\Http\Controllers\Api\OrderItemController;
+use App\Http\Controllers\Api\MpesaController;
 use App\Http\Controllers\Api\Admin\AdminCustomerController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminOrderController;
@@ -15,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
-})->middleware('auth:sanctum');
+})->middleware(['auth:sanctum', 'role:customer']);
 
 //categories routes
 Route::get('/categories', [CategoryController::class, 'index']);
@@ -31,10 +32,16 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::post('/admin/login', [AuthController::class, 'adminLogin'])->middleware('throttle:5,1');
 Route::get('/store-info', [AdminSettingsController::class, 'storeInfo']);
 
+// Safaricom calls this public API endpoint after the customer responds to the STK prompt.
+Route::post('/mpesa/callback', [MpesaController::class, 'callback']);
+
 // Protected routes
-Route::middleware('auth:sanctum')->group(function () {
+// Customer operations require a customer account, even if an admin token is supplied.
+Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/orders/{orderId}/mpesa', [MpesaController::class, 'initiate']);
+    Route::get('/orders/{orderId}/payment-status', [MpesaController::class, 'status']);
     Route::patch('/orders/{orderId}/items/{itemId}', [OrderItemController::class, 'update']);
     Route::delete('/orders/{orderId}/items/{itemId}', [OrderItemController::class, 'destroy']);
 

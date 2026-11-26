@@ -57,6 +57,13 @@ class AuthController extends Controller
             ], 401);
         }
 
+        // Administrator accounts must sign in through the separate admin portal.
+        if ($user->role !== 'customer') {
+            return response()->json([
+                'message' => 'Administrator accounts must sign in through the admin portal.',
+            ], 403);
+        }
+
         // Generate token
         $token = $user->createToken('auth_token')->plainTextToken;
 

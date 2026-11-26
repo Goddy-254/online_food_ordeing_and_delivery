@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
+import { useRoute } from 'vue-router'
 
 import { useMenuStore } from "@/stores/menuStore"
 
@@ -8,9 +9,16 @@ import FoodCard from "@/components/FoodCard.vue";
 
 
 const menuStore = useMenuStore();
+const route = useRoute()
 
 // Selected category
 const selectedCategory = ref(null);
+
+// Honor category shortcuts from the home page and browser navigation.
+watch(() => route.query.category, (category) => {
+  const id = Array.isArray(category) ? category[0] : category
+  selectedCategory.value = id && Number.isFinite(Number(id)) ? Number(id) : null
+}, { immediate: true })
 
 // Fetch categories and menu items
 const pageLoading = ref(true);

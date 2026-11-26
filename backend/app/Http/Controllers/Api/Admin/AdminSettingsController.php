@@ -36,7 +36,7 @@ class AdminSettingsController extends Controller
     public function update(Request $request)
     {
         $validated = $request->validate([
-            'delivery_fee' => ['required', 'numeric', 'min:0', 'max:99999999.99'],
+            'delivery_fee' => ['required', 'integer', 'min:0', 'max:99999999'],
             'operating_hours' => ['required', 'string', 'max:255'],
             'store_open' => ['required', 'boolean'],
         ]);

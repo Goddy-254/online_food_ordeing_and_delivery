@@ -15,6 +15,23 @@ const errorMessage = ref('')
 const statuses = ['pending', 'preparing', 'out_for_delivery', 'delivered', 'cancelled']
 const currency = new Intl.NumberFormat('en-KE', { style: 'currency', currency: 'KES', maximumFractionDigits: 2 })
 
+// Daraja reports a customer-cancelled STK prompt as failed with result code 1032.
+function paymentStatus(payment) {
+  return payment.status === 'failed' && Number(payment.result_code) === 1032
+    ? 'cancelled'
+    : payment.status
+}
+
+function paymentStatusLabel(payment) {
+  const state = paymentStatus(payment)
+  if (state === 'cancelled') return 'Cancelled by customer'
+  if (state === 'pending') return 'Prompt sent · awaiting customer'
+  if (state === 'starting') return 'Sending payment prompt'
+  if (state === 'uninitiated') return 'Payment not started'
+  if (state === 'review') return 'Needs manual review'
+  return state.replaceAll('_', ' ')
+}
+
 async function loadOrder() {
   loading.value = true
   errorMessage.value = ''
@@ -95,12 +112,37 @@ watch(() => route.params.id, loadOrder)
         <p class="mt-4 text-xs text-slate-400">Placed {{ new Date(order.created_at).toLocaleString() }}</p>
       </section>
       <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h2 class="font-black text-slate-900">Payments</h2>
-        <div v-if="order.payments?.length" class="mt-4 space-y-3">
-          <div v-for="payment in order.payments" :key="payment.id" class="flex items-center justify-between gap-3 rounded-xl bg-slate-50 p-3">
-            <div><p class="font-semibold capitalize">{{ payment.payment_method.replaceAll('_', ' ') }}</p><p v-if="payment.mpesa_receipt" class="mt-1 text-xs text-slate-500">Receipt {{ payment.mpesa_receipt }}</p></div>
-            <div class="text-right"><p class="font-bold">{{ currency.format(Number(payment.amount)) }}</p><StatusPill :status="payment.status" /></div>
-          </div>
+        <h2 class="font-black text-slate-900">Payment requests</h2>
+        <div v-if="order.payments?.length" class="mt-4 space-y-4">
+          <article v-for="payment in order.payments" :key="payment.id" class="rounded-xl border border-slate-200 p-4">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="font-bold capitalize text-slate-900">{{ payment.payment_method.replaceAll('_', ' ') }} · Attempt #{{ payment.id }}</p>
+                <p class="mt-1 text-xs text-slate-500">Started {{ new Date(payment.created_at).toLocaleString() }}</p>
+              </div>
+              <div class="text-right">
+                <p class="mb-2 font-bold">{{ currency.format(Number(payment.amount)) }}</p>
+                <StatusPill :status="paymentStatus(payment)" />
+                <p class="mt-1 text-xs font-semibold text-slate-600">{{ paymentStatusLabel(payment) }}</p>
+              </div>
+            </div>
+
+            <dl class="mt-4 space-y-2 border-t border-slate-100 pt-3 text-sm">
+              <div v-if="payment.phone_number" class="flex justify-between gap-4"><dt class="text-slate-500">Prompt sent to</dt><dd class="font-semibold text-slate-800">{{ payment.phone_number }}</dd></div>
+              <div v-if="payment.mpesa_receipt" class="flex justify-between gap-4"><dt class="text-slate-500">M-Pesa receipt</dt><dd class="font-semibold text-slate-800">{{ payment.mpesa_receipt }}</dd></div>
+              <div v-if="payment.paid_at" class="flex justify-between gap-4"><dt class="text-slate-500">Paid at</dt><dd class="text-right font-semibold text-slate-800">{{ new Date(payment.paid_at).toLocaleString() }}</dd></div>
+              <div v-if="payment.result_code !== null && payment.result_code !== undefined" class="flex justify-between gap-4"><dt class="text-slate-500">M-Pesa result code</dt><dd class="font-semibold text-slate-800">{{ payment.result_code }}</dd></div>
+            </dl>
+
+            <p v-if="payment.result_description" class="mt-3 rounded-lg bg-slate-50 p-3 text-sm leading-5 text-slate-700">{{ payment.result_description }}</p>
+            <p v-else-if="payment.status === 'pending'" class="mt-3 rounded-lg bg-amber-50 p-3 text-sm leading-5 text-amber-900">The request was accepted. The customer still needs to approve it on their phone.</p>
+
+            <details v-if="payment.merchant_request_id || payment.checkout_request_id" class="mt-3 text-xs text-slate-500">
+              <summary class="cursor-pointer font-semibold">Safaricom request references</summary>
+              <p v-if="payment.merchant_request_id" class="mt-2 break-all">Merchant request: {{ payment.merchant_request_id }}</p>
+              <p v-if="payment.checkout_request_id" class="mt-1 break-all">Checkout request: {{ payment.checkout_request_id }}</p>
+            </details>
+          </article>
         </div>
         <p v-else class="mt-3 text-sm text-slate-500">No payment record has been added.</p>
       </section>
