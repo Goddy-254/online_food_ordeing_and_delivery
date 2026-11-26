@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Notifications\PaymentSuccessfulNotification;
 use App\Services\MpesaService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -183,14 +184,16 @@ class MpesaController extends Controller
             return response()->json(['ResultCode' => 0, 'ResultDesc' => 'Accepted']);
         }
 
+        $newlyPaidPaymentId = null;
+
         try {
-            DB::transaction(function () use ($callback, $checkoutId) {
+            $newlyPaidPaymentId = DB::transaction(function () use ($callback, $checkoutId) {
                 $payment = Payment::where('checkout_request_id', $checkoutId)
                     ->lockForUpdate()
                     ->first();
 
                 if (!$payment || $payment->status === 'paid') {
-                    return;
+                    return null;
                 }
 
                 $resultCode = (int) data_get($callback, 'ResultCode', -1);
@@ -203,7 +206,7 @@ class MpesaController extends Controller
                         'result_description' => $resultDescription,
                     ]);
 
-                    return;
+                    return null;
                 }
 
                 $metadata = collect(data_get($callback, 'CallbackMetadata.Item', []))
@@ -236,7 +239,7 @@ class MpesaController extends Controller
                         'result_description' => 'Callback details did not match the expected payment.',
                     ]);
 
-                    return;
+                    return null;
                 }
 
                 $payment->update([
@@ -246,6 +249,9 @@ class MpesaController extends Controller
                     'mpesa_receipt' => $receipt,
                     'paid_at' => now(),
                 ]);
+
+                // Return an ID only for the first transition to paid; duplicate callbacks won't email twice.
+                return $payment->id;
             });
         } catch (Throwable $exception) {
             // A non-success response lets the sender/reconciliation process retry safely.
@@ -255,6 +261,26 @@ class MpesaController extends Controller
             ]);
 
             return response()->json(['ResultCode' => 1, 'ResultDesc' => 'Retry processing callback.'], 500);
+        }
+
+        if ($newlyPaidPaymentId) {
+            // Send after the callback response so SMTP latency cannot delay Daraja's acknowledgement.
+            dispatch(function () use ($newlyPaidPaymentId) {
+                try {
+                    $payment = Payment::with('order.user')->find($newlyPaidPaymentId);
+                    $customer = $payment?->order?->user;
+
+                    if ($customer) {
+                        $customer->notify(new PaymentSuccessfulNotification($payment));
+                    }
+                } catch (Throwable $exception) {
+                    // Payment is already committed; email failure must not make Daraja retry the callback.
+                    Log::warning('Could not send successful-payment email.', [
+                        'payment_id' => $newlyPaidPaymentId,
+                        'exception' => $exception::class,
+                    ]);
+                }
+            })->afterResponse();
         }
 
         return response()->json(['ResultCode' => 0, 'ResultDesc' => 'Accepted']);

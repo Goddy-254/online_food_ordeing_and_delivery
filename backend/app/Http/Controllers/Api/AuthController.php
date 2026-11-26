@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Notifications\NewAccountWelcomeNotification;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use Throwable;
 
 class AuthController extends Controller
 {
@@ -28,6 +31,17 @@ class AuthController extends Controller
 
         // Fetch database defaults (such as `role = 'customer'`)
         $user->refresh();
+
+        // A mail outage should not prevent an account from being created.
+        try {
+            $user->notify(new NewAccountWelcomeNotification());
+        } catch (Throwable $exception) {
+            Log::warning('Could not send new-account welcome email.', [
+                'user_id' => $user->id,
+                'exception' => $exception::class,
+            ]);
+        }
+
         // Generate authentication token
         $token = $user->createToken('auth_token')->plainTextToken;
 

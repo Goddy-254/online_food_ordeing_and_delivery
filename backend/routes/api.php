@@ -1,22 +1,23 @@
 <?php
 
-use App\Http\Controllers\Api\AuthController;
-use App\Http\Controllers\Api\CategoryController;
-use App\Http\Controllers\Api\MenuItemController;
-use App\Http\Controllers\Api\OrderController;
-use App\Http\Controllers\Api\OrderItemController;
-use App\Http\Controllers\Api\MpesaController;
 use App\Http\Controllers\Api\Admin\AdminCustomerController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminOrderController;
 use App\Http\Controllers\Api\Admin\AdminSettingsController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
+use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CategoryController;
+use App\Http\Controllers\Api\MenuItemController;
+use App\Http\Controllers\Api\MpesaController;
+use App\Http\Controllers\Api\OrderController;
+use App\Http\Controllers\Api\OrderItemController;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
-})->middleware(['auth:sanctum', 'role:customer']);
+})->middleware('auth:sanctum');
 
 //categories routes
 Route::get('/categories', [CategoryController::class, 'index']);
@@ -35,9 +36,21 @@ Route::get('/store-info', [AdminSettingsController::class, 'storeInfo']);
 // Safaricom calls this public API endpoint after the customer responds to the STK prompt.
 Route::post('/mpesa/callback', [MpesaController::class, 'callback']);
 
+Route::get('/test-mail', function () {
+    Mail::raw(
+        'Congratulations! Laravel can send email.',
+        function ($message) {
+            $message->to('recipient@example.com')
+                    ->subject('Laravel Email Test');
+        }
+    );
+
+    return 'Email sent successfully!';
+});
+
+
 // Protected routes
-// Customer operations require a customer account, even if an admin token is supplied.
-Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/orders/{orderId}/mpesa', [MpesaController::class, 'initiate']);
