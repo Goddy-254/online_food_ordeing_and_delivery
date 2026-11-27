@@ -2,7 +2,7 @@
 
 services:
   - type: web
-    name: online-food-ordering-api
+    name: online-food-ordering-system
     runtime: docker
     plan: free
     dockerfilePath: ./backend/Dockerfile
